@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  phone         String?
+  isActive      Boolean   @default(false)
+  role          String    @default("user")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  payments      Payment[]
+  products      Product[]
+  sales         Sales[]
+  roasRecords   RoasRecord[]
+  userSetting   UserSetting?
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId       String    @unique
+  grossAmount   Float
+  status        String    @default("pending")
+  paymentType   String?
+  paidAt        DateTime?
+  rawResponse   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Product {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nama          String
+  bahan         Float     @default(0)
+  tenaga        Float     @default(0)
+  overhead      Float     @default(0)
+  packaging     Float     @default(0)
+  lain          Float     @default(0)
+  jumlah        Float     @default(1)
+  berat         Float     @default(250)
+  hpp           Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Sales {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          String
+  productName   String
+  marketplace   String
+  qty           Int
+  price         Float
+  hppPerUnit    Float
+  adSpend       Float     @default(0)
+  createdAt     DateTime  @default(now())
+}
+
+model RoasRecord {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          String
+  marketplace   String
+  revenue       Float
+  spend         Float
+  roas          Float
+  createdAt     DateTime  @default(now())
+}
+
+model UserSetting {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  marketplaces  String    @default("{}")
+  targetMargin  Float     @default(20)
+  theme         String    @default("dark")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
